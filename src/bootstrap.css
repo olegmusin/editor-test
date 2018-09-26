@@ -1139,10 +1139,10 @@ img {
   border-radius: 50%;
 }
 hr {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   border: 0;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #222;
 }
 .sr-only {
   position: absolute;
@@ -2999,7 +2999,7 @@ select[multiple].input-lg {
 .btn {
   display: inline-block;
   padding: 6px 12px;
-  margin-bottom: 0;
+  margin: 5px 0 0;
   font-size: 14px;
   font-weight: normal;
   line-height: 1.42857143;
