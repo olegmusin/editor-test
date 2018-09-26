@@ -9,7 +9,7 @@ html, body {
  }
 
 .sidepane {
-  height: stretch;
+  height: 100%;
   background: #E8E8EA;
   font-family: 'Courier New', Courier, monospace
 }
@@ -25,6 +25,10 @@ html, body {
 
 #assetText {
   font-size: 24px;
+}
+
+.assets{
+  overflow: scroll;
 }
 
 .assets .text, .assets .image {
@@ -63,4 +67,8 @@ html, body {
   height: 50px;
   width: 50px;
   padding: 3px;
+}
+
+.images-container{
+  padding: 10px;
 }

@@ -112,16 +112,17 @@ class App extends React.Component {
               <h4>Text</h4>
               <div className="well">...</div>
             </div>
-            <div className="image">
-              <h4>Images</h4>
-              <ul className="nav nav-justified">
+            <h4>Images</h4>
+            <div className="assets">
+              <ul className="nav nav-justified images-container">
                 {/* <!-- List of images here --> */}
                 {imagesList.map(item => (
-                  <li>
+                  <li className="image">
                     <img src={item} alt={item} className="img-rounded" />
                   </li>
-                ))}
+                  ))}
               </ul>
+
             </div>
           </form>
         </div>
