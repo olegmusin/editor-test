@@ -22,6 +22,8 @@ class App extends React.Component {
   }
 
   fetchData() {
+    const { imagesList } = this.state;
+
     service
       .getImages()
       .then((response) => {
@@ -36,7 +38,7 @@ class App extends React.Component {
         }
 
         this.setState({
-          imagesList: [...this.state.imagesList, ...images],
+          imagesList: [...imagesList, ...images],
         });
       })
       .catch((err) => {
@@ -49,8 +51,13 @@ class App extends React.Component {
   }
 
   handleUploadImage() {
+    const { selectedFile, imagesList } = this.state;
+
+    // Do nothing if no file selected
+    if (!selectedFile) return;
+
     const formData = new FormData();
-    formData.append('file', this.state.selectedFile, this.state.selectedFile.name);
+    formData.append('file', selectedFile, selectedFile.name);
 
     service
       .uploadImage(formData)
@@ -62,7 +69,7 @@ class App extends React.Component {
         }
 
         this.setState({
-          imagesList: [...this.state.imagesList, file],
+          imagesList: [...imagesList, file],
         });
       })
       .catch((err) => {
@@ -105,7 +112,7 @@ class App extends React.Component {
               </button>
             </div>
           </div>
-          <form>
+          <div className="assets">
             <h3>Assets</h3>
             <hr />
             <div className="text">
@@ -113,7 +120,7 @@ class App extends React.Component {
               <div className="well">...</div>
             </div>
             <h4>Images</h4>
-            <div className="assets">
+            <div className="images">
               <ul className="nav nav-justified images-container">
                 {/* <!-- List of images here --> */}
                 {imagesList.map(item => (
@@ -122,9 +129,8 @@ class App extends React.Component {
                   </li>
                   ))}
               </ul>
-
             </div>
-          </form>
+          </div>
         </div>
         {/* <!-- canvas --> */}
         <div className="canvas col-sm-8 col-md-8 col-lg-8">
