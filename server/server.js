@@ -1,11 +1,15 @@
 const fs = require('fs');
 
 const express = require('express');
+const cors = require('cors');
 const multer = require('multer');
 const junk = require('junk');
 
 const port = 5000;
 const app = express();
+
+// CORS issue fix (localhost:3000 to localhost:5000)
+app.use(cors());
 
 app.use(express.static('./'));
 
@@ -34,7 +38,7 @@ const filter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter: filter,
-}).single('upload');
+}).single('file');
 
 /* ===============================
   ROUTE
@@ -63,11 +67,6 @@ app.get('/images', (req, res) => {
     .map(f => filePath + f); // map with url path
 
   res.json(files);
-});
-
-// general route
-app.get('/', (req, res) => {
-  res.sendFile(`${__dirname}/index.html`);
 });
 
 app.listen(port, () => {

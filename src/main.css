@@ -9,7 +9,7 @@ html, body {
  }
 
 .sidepane {
-  height: -webkit-fill-available;
+  height: stretch;
   background: #E8E8EA;
   font-family: 'Courier New', Courier, monospace
 }
@@ -57,4 +57,10 @@ html, body {
 
 .item.selected {
   border-color: blue;
+}
+
+.img-rounded {
+  height: 50px;
+  width: 50px;
+  padding: 3px;
 }

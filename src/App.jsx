@@ -1,5 +1,7 @@
 import React from 'react';
 
+import getProperty from './helpers/get-property';
+import * as service from './data-service';
 import './main.css';
 import './bootstrap.css';
 
@@ -7,12 +9,65 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      imagesList: [],
+      selectedFile: null,
+    };
+
     this.handleUploadImage = this.handleUploadImage.bind(this);
     this.handleUploadText = this.handleUploadText.bind(this);
+    this.handleSelectFile = this.handleSelectFile.bind(this);
+
+    this.fetchData();
+  }
+
+  fetchData() {
+    service
+      .getImages()
+      .then((response) => {
+        const images = getProperty(response, 'data');
+
+        if (!images) {
+          throw new Error('Invalid response data.');
+        }
+
+        if (!Array.isArray(images)) {
+          throw new TypeError('Unrecognised response data.');
+        }
+
+        this.setState({
+          imagesList: [...this.state.imagesList, ...images],
+        });
+      })
+      .catch((err) => {
+        console.log(err.toString());
+      });
+  }
+
+  handleSelectFile(e) {
+    this.setState({ selectedFile: e.target.files[0] });
   }
 
   handleUploadImage() {
-    console.log('#imageUpload', !!this);
+    const formData = new FormData();
+    formData.append('file', this.state.selectedFile, this.state.selectedFile.name);
+
+    service
+      .uploadImage(formData)
+      .then((response) => {
+        const file = getProperty(response, 'data.file');
+
+        if (!file) {
+          throw new Error('Error creating file on server!');
+        }
+
+        this.setState({
+          imagesList: [...this.state.imagesList, file],
+        });
+      })
+      .catch((err) => {
+        console.log(err.toString());
+      });
   }
 
   handleUploadText() {
@@ -20,6 +75,7 @@ class App extends React.Component {
   }
 
   render() {
+    const { imagesList } = this.state;
     return (
       <div>
         <div className="sidepane col-sm-4 col-md-4 col-lg-4">
@@ -32,6 +88,7 @@ class App extends React.Component {
                 name="file"
                 id="file"
                 className="form-control"
+                onChange={this.handleSelectFile}
               />
               <button onClick={this.handleUploadImage} className="btn btn-info">
                 Upload Image
@@ -57,12 +114,14 @@ class App extends React.Component {
             </div>
             <div className="image">
               <h4>Images</h4>
-              <div className="well">
-                <ul className="list-unstyled">
-                  {/* <!-- List of images here --> */}
-                  {/* <!-- <li><img src="images/sample.jpeg" class="img-rounded" /></li> --> */}
-                </ul>
-              </div>
+              <ul className="nav nav-justified">
+                {/* <!-- List of images here --> */}
+                {imagesList.map(item => (
+                  <li>
+                    <img src={item} alt={item} className="img-rounded" />
+                  </li>
+                ))}
+              </ul>
             </div>
           </form>
         </div>
@@ -72,7 +131,8 @@ class App extends React.Component {
             {/* <!-- Add images and texts to here --> */}
           </div>
         </div>
-      </div>);
+      </div>
+    );
   }
 }
 
