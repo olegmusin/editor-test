@@ -1,10 +1,12 @@
 import React from 'react';
+import uuidv4 from 'uuid';
 
 import getProperty from '../helpers/get-property';
 import * as service from '../services/data-service';
 
 import ImageItem from './image-item';
 import CanvasItem from './canvas-item';
+
 import './main.css';
 import './bootstrap.css';
 
@@ -26,15 +28,23 @@ class Editor extends React.Component {
     this.fetchData();
   }
 
+  // ----------------------------------------
+  // Event hanlers
+  //-----------------------------------------
+
   onDrop(e) {
-    const { canvasItems } = this.state;
+    const { canvasItems, imagesList } = this.state;
     const { target, currentTarget, clientX, clientY } = e;
+
     const id = e.dataTransfer.getData('id');
-    const existentItem = this.state.canvasItems.find(item => item.image.toString() === id);
+    const action = e.dataTransfer.getData('action');
+    const image = e.dataTransfer.getData('image');
+
+    const existentItem = canvasItems.find(item => item.id === id);
 
     e.preventDefault();
 
-    if (existentItem !== undefined) {
+    if (action === 'move') {
       canvasItems.splice(canvasItems.indexOf(existentItem), 1);
 
       this.setState({
@@ -42,6 +52,11 @@ class Editor extends React.Component {
       });
     }
 
+    /**
+    * Function calculates top coordinate of item in canvas
+    *
+    * @returns {Number} top coordinate of item
+    */
     const calculateTop = () => {
       const elementHeight = 65;
       const top = clientY - target.parentElement.offsetTop - currentTarget.offsetTop;
@@ -51,6 +66,11 @@ class Editor extends React.Component {
         : top;
     };
 
+    /**
+    * Function calculates left coordinate of item in canvas
+    *
+    * @returns {Number} Left coordinate of item
+    */
     const calculateLeft = () => {
       const elementWidth = 65;
       const left = clientX - target.parentElement.offsetLeft - currentTarget.offsetLeft;
@@ -61,7 +81,8 @@ class Editor extends React.Component {
     };
 
     const newAddedItem = {
-      image: this.state.imagesList.find(item => item === id),
+      id: uuidv4(),
+      image: imagesList.find(item => item === image),
       coords: {
         left: calculateLeft(),
         top: calculateTop(),
@@ -76,33 +97,16 @@ class Editor extends React.Component {
     });
   }
 
-  onDragStart(e, id) { // eslint-disable-line class-methods-use-this
+  onDragStart(e, id, image) { // eslint-disable-line class-methods-use-this
     e.dataTransfer.setData('id', id);
-  }
+    e.dataTransfer.setData('image', image);
 
-  fetchData() {
-    const { imagesList } = this.state;
+    if (e.target.parentNode.className === 'dropped-item') {
+      e.dataTransfer.setData('action', 'move');
+      return;
+    }
 
-    service
-      .getImages()
-      .then((response) => {
-        const images = getProperty(response, 'data');
-
-        if (!images) {
-          throw new Error('Invalid response data.');
-        }
-
-        if (!Array.isArray(images)) {
-          throw new TypeError('Unrecognised response data.');
-        }
-
-        this.setState({
-          imagesList: [...imagesList, ...images],
-        });
-      })
-      .catch((err) => {
-        console.log(err.toString());
-      });
+    e.dataTransfer.setData('action', 'add');
   }
 
   handleSelectFile(e) {
@@ -136,9 +140,9 @@ class Editor extends React.Component {
       });
   }
 
-  handleDeleteCanvasItem(e) {
+  handleDeleteCanvasItem(id) {
     const { canvasItems } = this.state;
-    const itemToDelete = canvasItems.find(item => item.image === e.target.src);
+    const itemToDelete = canvasItems.find(item => item.id === id);
 
     canvasItems.splice(canvasItems.indexOf(itemToDelete), 1);
 
@@ -149,6 +153,31 @@ class Editor extends React.Component {
 
   handleUploadText() {
     console.log('#textUpload', !!this);
+  }
+
+  fetchData() {
+    const { imagesList } = this.state;
+
+    service
+      .getImages()
+      .then((response) => {
+        const images = getProperty(response, 'data');
+
+        if (!images) {
+          throw new Error('Invalid response data.');
+        }
+
+        if (!Array.isArray(images)) {
+          throw new TypeError('Unrecognised response data.');
+        }
+
+        this.setState({
+          imagesList: [...imagesList, ...images],
+        });
+      })
+      .catch((err) => {
+        console.log(err.toString());
+      });
   }
 
   render() {
@@ -181,7 +210,7 @@ class Editor extends React.Component {
                 Add Text
               </button>
             </div>
-            <span>Note: To delete item from canvas double-click on it</span>
+            <span>Note: To <b>delete</b> item from canvas double-click on it</span>
           </div>
           <div className="assets">
             <h3>Assets</h3>
@@ -194,9 +223,16 @@ class Editor extends React.Component {
             <div className="images">
               <ul className="nav nav-justified images-container">
                 {/* <!-- List of images here --> */}
-                {imagesList.map(item => (
-                  <ImageItem item={item} onDragStart={e => this.onDragStart(e, item)} />
-                  ))}
+                {imagesList.map((item) => {
+                  const id = uuidv4();
+                  return (
+                    <ImageItem
+                      key={id}
+                      item={item}
+                      onDragStart={e => this.onDragStart(e, id, item)}
+                    />
+                  );
+                })}
               </ul>
             </div>
           </div>
@@ -210,9 +246,10 @@ class Editor extends React.Component {
           >
             {canvasItems.map(item => (
               <CanvasItem
+                key={item.id}
                 item={item}
-                onDragStart={e => this.onDragStart(e, item.image)}
-                onDoubleClick={e => this.handleDeleteCanvasItem(e)}
+                onDragStart={e => this.onDragStart(e, item.id, item.image)}
+                onDoubleClick={() => this.handleDeleteCanvasItem(item.id)}
               />
             ))}
           </div>
