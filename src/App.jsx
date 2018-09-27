@@ -18,6 +18,7 @@ class App extends React.Component {
     this.handleUploadImage = this.handleUploadImage.bind(this);
     this.handleUploadText = this.handleUploadText.bind(this);
     this.handleSelectFile = this.handleSelectFile.bind(this);
+    this.handleDeleteCanvasItem = this.handleDeleteCanvasItem.bind(this);
 
     this.fetchData();
   }
@@ -38,11 +39,25 @@ class App extends React.Component {
       });
     }
 
+    const calculateTop = () => {
+      const top = clientY - target.parentElement.offsetTop - currentTarget.offsetTop;
+      return top + 65 > target.parentElement.clientHeight + target.parentElement.offsetTop
+        ? target.parentElement.clientHeight - 65 - currentTarget.offsetTop
+        : top;
+    };
+
+    const calculateLeft = () => {
+      const left = clientX - target.parentElement.offsetLeft - currentTarget.offsetLeft;
+      return left + 65 > target.parentElement.clientWidth + target.parentElement.offseLeft
+        ? target.parentElement.clientWidth - 50
+        : left;
+    };
+
     const newAddedItem = {
-      image: this.state.imagesList.find(item => item.toString() === id),
+      image: this.state.imagesList.find(item => item === id),
       coords: {
-        left: clientX - target.parentElement.offsetLeft - currentTarget.offsetLeft,
-        top: clientY - target.parentElement.offsetTop - currentTarget.offsetTop,
+        left: calculateLeft(),
+        top: calculateTop(),
       },
     };
 
@@ -114,6 +129,17 @@ class App extends React.Component {
       });
   }
 
+  handleDeleteCanvasItem(e) {
+    const { canvasItems } = this.state;
+    const itemToDelete = canvasItems.find(item => item.image === e.target.src);
+
+    canvasItems.splice(canvasItems.indexOf(itemToDelete), 1);
+
+    this.setState({
+      canvasItems: [...canvasItems],
+    });
+  }
+
   handleUploadText() {
     console.log('#textUpload', !!this);
   }
@@ -174,7 +200,6 @@ class App extends React.Component {
         {/* <!-- canvas --> */}
         <div className="canvas col-sm-8 col-md-8 col-lg-8">
           <div
-            draggable
             className="block"
             onDragOver={e => e.preventDefault()}
             onDrop={e => this.onDrop(e)}
@@ -183,9 +208,10 @@ class App extends React.Component {
               <div
                 className="dropped-item"
                 style={item.coords}
-                key={item.image.toString()}
+                key={item.image}
                 draggable
-                onDragStart={e => this.onDragStart(e, item.image.toString())}
+                onDragStart={e => this.onDragStart(e, item.image)}
+                onDoubleClick={e => this.handleDeleteCanvasItem(e)}
               >
                 <img src={item.image} alt={item.image} className="img-rounded" />
               </div>
