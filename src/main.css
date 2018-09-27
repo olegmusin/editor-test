@@ -67,6 +67,7 @@ html, body {
   padding: 4px;
   margin: 5px;
   background-color: white;
+  border: 1px solid cadetblue;
 }
 
 .images-container {
@@ -75,4 +76,8 @@ html, body {
 
 .images {
   overflow: scroll;
+}
+
+.dropped-item {
+  position: absolute;
 }

@@ -12,6 +12,7 @@ class App extends React.Component {
     this.state = {
       imagesList: [],
       selectedFile: null,
+      canvasItems: [],
     };
 
     this.handleUploadImage = this.handleUploadImage.bind(this);
@@ -19,6 +20,42 @@ class App extends React.Component {
     this.handleSelectFile = this.handleSelectFile.bind(this);
 
     this.fetchData();
+  }
+
+  onDrop(e) {
+    const { canvasItems } = this.state;
+    const { target, currentTarget, clientX, clientY } = e;
+    const id = e.dataTransfer.getData('id');
+    const existentItem = this.state.canvasItems.find(item => item.image.toString() === id);
+
+    e.preventDefault();
+
+    if (existentItem !== undefined) {
+      canvasItems.splice(canvasItems.indexOf(existentItem), 1);
+
+      this.setState({
+        canvasItems: [...canvasItems],
+      });
+    }
+
+    const newAddedItem = {
+      image: this.state.imagesList.find(item => item.toString() === id),
+      coords: {
+        left: clientX - target.parentElement.offsetLeft - currentTarget.offsetLeft,
+        top: clientY - target.parentElement.offsetTop - currentTarget.offsetTop,
+      },
+    };
+
+    this.setState({
+      canvasItems: [
+        ...canvasItems,
+        newAddedItem,
+      ],
+    });
+  }
+
+  onDragStart(e, id) { // eslint-disable-line class-methods-use-this
+    e.dataTransfer.setData('id', id);
   }
 
   fetchData() {
@@ -124,8 +161,10 @@ class App extends React.Component {
               <ul className="nav nav-justified images-container">
                 {/* <!-- List of images here --> */}
                 {imagesList.map(item => (
-                  <li className="image">
-                    <img src={item} alt={item} className="img-rounded" />
+                  <li className="image" key={item.toString()}>
+                    <div draggable onDragStart={e => this.onDragStart(e, item.toString())} >
+                      <img src={item} alt={item} className="img-rounded" />
+                    </div>
                   </li>
                   ))}
               </ul>
@@ -134,8 +173,23 @@ class App extends React.Component {
         </div>
         {/* <!-- canvas --> */}
         <div className="canvas col-sm-8 col-md-8 col-lg-8">
-          <div className="block">
-            {/* <!-- Add images and texts to here --> */}
+          <div
+            draggable
+            className="block"
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => this.onDrop(e)}
+          >
+            {this.state.canvasItems.map(item => (
+              <div
+                className="dropped-item"
+                style={item.coords}
+                key={item.image.toString()}
+                draggable
+                onDragStart={e => this.onDragStart(e, item.image.toString())}
+              >
+                <img src={item.image} alt={item.image} className="img-rounded" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
