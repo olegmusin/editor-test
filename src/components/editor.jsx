@@ -1,11 +1,14 @@
 import React from 'react';
 
-import getProperty from './helpers/get-property';
-import * as service from './data-service';
+import getProperty from '../helpers/get-property';
+import * as service from '../services/data-service';
+
+import ImageItem from './image-item';
+import CanvasItem from './canvas-item';
 import './main.css';
 import './bootstrap.css';
 
-class App extends React.Component {
+class Editor extends React.Component {
   constructor(props) {
     super(props);
 
@@ -40,16 +43,20 @@ class App extends React.Component {
     }
 
     const calculateTop = () => {
+      const elementHeight = 65;
       const top = clientY - target.parentElement.offsetTop - currentTarget.offsetTop;
-      return top + 65 > target.parentElement.clientHeight + target.parentElement.offsetTop
-        ? target.parentElement.clientHeight - 65 - currentTarget.offsetTop
+      return top + elementHeight > target.parentElement.clientHeight
+        + target.parentElement.offsetTop
+        ? target.parentElement.clientHeight - currentTarget.offsetTop - elementHeight
         : top;
     };
 
     const calculateLeft = () => {
+      const elementWidth = 65;
       const left = clientX - target.parentElement.offsetLeft - currentTarget.offsetLeft;
-      return left + 65 > target.parentElement.clientWidth + target.parentElement.offseLeft
-        ? target.parentElement.clientWidth - 50
+      return left + elementWidth > target.parentElement.clientWidth
+        + target.parentElement.offsetLeft
+        ? target.parentElement.clientWidth - currentTarget.offsetLeft - elementWidth
         : left;
     };
 
@@ -145,7 +152,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { imagesList } = this.state;
+    const { imagesList, canvasItems } = this.state;
     return (
       <div>
         <div className="sidepane col-sm-4 col-md-4 col-lg-4">
@@ -174,6 +181,7 @@ class App extends React.Component {
                 Add Text
               </button>
             </div>
+            <span>Note: To delete item from canvas double-click on it</span>
           </div>
           <div className="assets">
             <h3>Assets</h3>
@@ -187,11 +195,7 @@ class App extends React.Component {
               <ul className="nav nav-justified images-container">
                 {/* <!-- List of images here --> */}
                 {imagesList.map(item => (
-                  <li className="image" key={item.toString()}>
-                    <div draggable onDragStart={e => this.onDragStart(e, item.toString())} >
-                      <img src={item} alt={item} className="img-rounded" />
-                    </div>
-                  </li>
+                  <ImageItem item={item} onDragStart={e => this.onDragStart(e, item)} />
                   ))}
               </ul>
             </div>
@@ -204,17 +208,12 @@ class App extends React.Component {
             onDragOver={e => e.preventDefault()}
             onDrop={e => this.onDrop(e)}
           >
-            {this.state.canvasItems.map(item => (
-              <div
-                className="dropped-item"
-                style={item.coords}
-                key={item.image}
-                draggable
+            {canvasItems.map(item => (
+              <CanvasItem
+                item={item}
                 onDragStart={e => this.onDragStart(e, item.image)}
                 onDoubleClick={e => this.handleDeleteCanvasItem(e)}
-              >
-                <img src={item.image} alt={item.image} className="img-rounded" />
-              </div>
+              />
             ))}
           </div>
         </div>
@@ -223,4 +222,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default Editor;
