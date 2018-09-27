@@ -4,8 +4,8 @@ import uuidv4 from 'uuid';
 import getProperty from '../helpers/get-property';
 import * as service from '../services/data-service';
 
-import ImageItem from './image-item';
 import CanvasItem from './canvas-item';
+import ImageItem from './image-item';
 
 import './main.css';
 import './bootstrap.css';
@@ -16,8 +16,8 @@ class Editor extends React.Component {
 
     this.state = {
       imagesList: [],
-      selectedFile: null,
       canvasItems: [],
+      selectedFile: null,
     };
 
     this.handleUploadImage = this.handleUploadImage.bind(this);
@@ -44,6 +44,8 @@ class Editor extends React.Component {
 
     e.preventDefault();
 
+    // The idea of move is to remove and add again element
+    // with updated coords to canvas
     if (action === 'move') {
       canvasItems.splice(canvasItems.indexOf(existentItem), 1);
 
@@ -59,10 +61,11 @@ class Editor extends React.Component {
     */
     const calculateTop = () => {
       const elementHeight = 65;
-      const top = clientY - target.parentElement.offsetTop - currentTarget.offsetTop;
-      return top + elementHeight > target.parentElement.clientHeight
-        + target.parentElement.offsetTop
-        ? target.parentElement.clientHeight - currentTarget.offsetTop - elementHeight
+      const { parentElement } = target;
+      const top = clientY - parentElement.offsetTop - currentTarget.offsetTop;
+
+      return top + elementHeight > parentElement.clientHeight + parentElement.offsetTop
+        ? parentElement.clientHeight - currentTarget.offsetTop - elementHeight
         : top;
     };
 
@@ -73,14 +76,15 @@ class Editor extends React.Component {
     */
     const calculateLeft = () => {
       const elementWidth = 65;
-      const left = clientX - target.parentElement.offsetLeft - currentTarget.offsetLeft;
-      return left + elementWidth > target.parentElement.clientWidth
-        + target.parentElement.offsetLeft
-        ? target.parentElement.clientWidth - currentTarget.offsetLeft - elementWidth
+      const { parentElement } = target;
+      const left = clientX - parentElement.offsetLeft - currentTarget.offsetLeft;
+
+      return left + elementWidth > parentElement.clientWidth + parentElement.offsetLeft
+        ? parentElement.clientWidth - currentTarget.offsetLeft - elementWidth
         : left;
     };
 
-    const newAddedItem = {
+    const newCanvasItem = {
       id: uuidv4(),
       image: imagesList.find(item => item === image),
       coords: {
@@ -90,10 +94,7 @@ class Editor extends React.Component {
     };
 
     this.setState({
-      canvasItems: [
-        ...canvasItems,
-        newAddedItem,
-      ],
+      canvasItems: [...canvasItems, newCanvasItem],
     });
   }
 
@@ -151,6 +152,7 @@ class Editor extends React.Component {
     });
   }
 
+  // TODO: create logic for text elements
   handleUploadText() {
     console.log('#textUpload', !!this);
   }
@@ -210,7 +212,7 @@ class Editor extends React.Component {
                 Add Text
               </button>
             </div>
-            <span>Note: To <b>delete</b> item from canvas double-click on it</span>
+            <span>Note: To <b>delete</b> item from canvas, simply double-click on it</span>
           </div>
           <div className="assets">
             <h3>Assets</h3>
